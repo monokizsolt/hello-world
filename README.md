@@ -1,4 +1,2 @@
 # hello-world
-Hello world repository
-
-VS 2 Test
+Hello world VS
