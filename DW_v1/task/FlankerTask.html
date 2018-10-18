@@ -1,0 +1,445 @@
+<html>
+
+<head>
+	<meta charset="UTF-8">
+
+	<link rel="stylesheet" href="Flanker.css" type="text/css" charset="utf-8" />
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="jquery-ui.js"></script>
+	<script type="text/javascript" src="jquery.imageloader.js"></script>
+	<script type="text/javascript" src="jquery.imageloader.min.js"></script>
+	<script type="text/javascript" src="FlankerDesign.js"></script>
+	<script type="text/javascript">
+
+		function shuffle(o) { //v1.0
+			for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+			return o;
+		};
+
+
+		// Timer speedup for debugging purposes
+
+		// (function (window) {
+		// 	var _setTimeout = window.setTimeout
+		// 	window.setTimeout = function (cb, t) {
+		// 		_setTimeout(cb, t / 100)
+		// 	}
+		// })(window)
+
+
+
+		function CounterBalanceTrialSequence(distractor, target, c) {
+			var trialNum = distractor.length;
+			var i, j;
+			var cVal = new Array(trialNum);
+			var idx = new Array(trialNum);
+			var trialCount = new Array(8);
+			var curDepth = 0;
+			var flag = true;
+			var tT = new Array(2);
+			tT[0] = new Array(2);
+			tT[1] = new Array(2);
+
+			for (i = 0; i < 8; i++) {
+				trialCount[i] = (trialNum - 1) / 8;
+			}
+
+			//generate congruency sequence
+			for (i = 0; i < trialNum; i++) {
+				idx[i] = 0;
+				cVal[i] = new Array(2);
+				cVal[i][0] = Math.floor(Math.random() * 2);
+				cVal[i][1] = 1 - cVal[i][0];
+			}
+
+			curDepth = 1;
+			c[0] = cVal[0][0];
+
+
+			while (flag) {
+				if (curDepth == trialNum) {
+					flag = false;
+				}
+				else {
+					if (idx[curDepth] < cVal[curDepth].length) {
+						var trialType = (curDepth % 2) * 4 + c[curDepth - 1] * 2 + cVal[curDepth][idx[curDepth]];
+						if (trialCount[trialType] > 0) {
+							c[curDepth] = cVal[curDepth][idx[curDepth]];
+							trialCount[trialType]--;
+							curDepth++;
+						}
+						else {
+							idx[curDepth]++;
+						}
+					}
+					else {
+						idx[curDepth] = 0;
+						curDepth--;
+						trialType = (curDepth % 2) * 4 + c[curDepth - 1] * 2 + cVal[curDepth][idx[curDepth]];
+						trialCount[trialType]++;
+						idx[curDepth]++;
+					}
+				}
+			}
+
+			var k = 0;
+			for (i = 0; i < 2; i++) {
+				for (j = 0; j < 2; j++) {
+					tT[i][j] = new Array((trialNum - 1) / 4);
+					for (k = 0; k < tT[i][j].length / 2; tT[i][j][k++] = 0);
+					for (; k < tT[i][j].length; tT[i][j][k++] = 1);
+					shuffle(tT[i][j]);
+				}
+			}
+
+			target[0] = Math.floor(Math.random() * 2) + 1;
+			if (c[0] == 0) {
+				distractor[0] = target[0];
+			}
+			else {
+				distractor[0] = 3 - target[0];
+			}
+
+
+			var counter = [[0, 0], [0, 0]];
+
+			for (i = 1; i < c.length; i++) {
+				sType = (i % 2);
+				target[i] = tT[sType][c[i]][counter[sType][c[i]]];
+				counter[sType][c[i]]++;
+				if (c[i] == 0) {
+					distractor[i] = target[i];
+				}
+				else {
+					distractor[i] = 1 - target[i];
+				}
+				target[i] = target[i] + sType * 2 + 1;
+				distractor[i] = distractor[i] + sType * 2 + 1;
+			}
+		}
+
+
+
+		function gup(name, tmpURL) {
+			var regexS = "[\\?&]" + name + "=([^&#]*)";
+			var regex = new RegExp(regexS);
+			var results = regex.exec(tmpURL);
+			if (results == null)
+				return "";
+			else
+				return results[1];
+		}
+
+		$(document).ready(function () {
+
+			if (window.opener) {
+				$("#rMappingText").html("Ez a feladat 4 körből áll.");
+				$("#rMappingText").show();
+			} else {
+				//$("#indicator").text("Please do not copy & paste this link to your web browser. In order to do this task properly, close this page and restart by clicking the link on MTurk.");
+				$("#rMappingText").text("Kérlek ne másold be ezt a linket a böngésződbe. Zárd be ezt az ablakot és indítsd újra a feladatot.");
+				$("#indicatorU").hide();
+				$("#indicatorM").hide();
+				$("#indicatorD").hide();
+				$("#targetWord").hide();
+				$("#endExpButton").hide();
+				$("#endRunButton").hide();
+				$("#next").hide();
+				$("#RTs").hide();
+				$("#Response").hide();
+				$("#NoFeedbackButton").hide();
+			}
+
+			//initialize experiment
+			const gender = $("#gender", opener.window.document).val()
+			const age = $("#age", opener.window.document).val()
+
+			var seqsNum = 4;
+			var runNum = 4;
+			var trialNum = 97;
+			var runId = -1;
+			var trialId = -1;
+			var counter = 1;
+			var trialStartTime = 0;
+			var dStart = new Date();
+			var expStartTime = dStart.getTime();
+			var inkId = new Array(runNum);
+			var posId = new Array(runNum);
+			var expStart = 0;
+
+			//added these to alter the timing between trials and feedback
+			var TrialOnsetTime = -1;
+			var timeOutHandle_too_slow = -1;
+			var congruency = new Array(runNum);
+			var targetId = new Array(runNum);
+			var distractorId = new Array(runNum);
+			var hasResponse = -1;
+
+
+			//these refer to html elements defined in the body (see below): paragraphs, buttons, etc.
+			data = [['ANSWERED (R = true P = false)', 'distractorId', 'targetId', 'RT', 'Answer', 'Correct answer', 'Gender', 'Age']];
+			$("#indicatorU").hide();
+			$("#indicatorM").hide();
+			$("#indicatorD").hide();
+			$("#targetWord").hide();
+			$("#endExpButton").hide();
+			$("#next").show();
+
+			var rMappingText1 = "f = Bal, g = Jobb, j = Fel, n = Le";
+			var rMapping = 0;
+			$("#rMappingText").text(rMappingText1);
+			$("#rMappingText").show();
+
+
+			var i = 0;
+			var j = 0;
+			for (i = 0; i < runNum; i++) {
+				congruency[i] = new Array(trialNum);
+				distractorId[i] = new Array(trialNum);
+				targetId[i] = new Array(trialNum);
+				CounterBalanceTrialSequence(distractorId[i], targetId[i], congruency[i]);
+				//$("#testSequenceD").val(distractor[i].join(","));
+				//$("#testSequenceT").val(target[i].join(","));
+			}
+
+			$("#indicatorM").show();
+			$("#endExpButton").hide();
+			$("#endRunButton").hide();
+			$("#RTs").hide();
+			$("#Response").hide();
+			$("#NoFeedbackButton").hide();
+
+			$("#next").click(function () {
+				$("#next").hide();
+				$("#Initialization").hide();
+				initExp();
+			});
+
+			$("#endExpButton").click(function () {
+				//send data back to main frame
+				$("#RTs", opener.window.document).val(data.join("\n"));
+				opener.updateMainMenu(5);
+				JavaScript: window.close();
+			});
+
+			$("#endRunButton").click(function () {
+				//send data back to main frame
+				$("#endRunButton").hide();
+				runRun();
+			});
+
+			$("#NoFeedbackButton").click(function () {
+				//send data back to main frame
+				$("#indicatorM").hide();
+				$("#NoFeedbackButton").hide();
+				$("#rMappingText").hide();
+				runExp();
+			});
+
+
+			function initExp() {
+				$("#NoFeedbackButton").show();
+			}
+
+			///Function To stop backspace presses 8, and spaces 32 
+			$(function () {
+				/*
+				 * this swallows backspace keys on any non-input element.
+				 * stops backspace -> back
+				 */
+				var rx = /INPUT|SELECT|TEXTAREA/i;
+
+				$(document).bind("keydown keypress", function (e) {
+					if (e.which == 32 || e.which == 8) { // 8 == backspace
+						if (!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly) {
+							e.preventDefault();
+						}
+					}
+				});
+			});
+
+			function runExp() {
+				counter = 1;
+				expStart = 1;
+				runRun();
+			}
+
+			function runRun() {
+				runId++;
+				if (runId < runNum) {
+					trialId = -1;
+					//set hasResponse to run begin status
+					hasResponse = -1;
+					$("#indicatorM").hide();
+					//5 seconds count down
+					runStart(5);
+				} else {
+					//end exp
+					expStart = 0;
+					$("#indicatorM").hide();
+					$("#endExpButton").show();
+				}
+			}
+
+			function runtrial() {
+				trialId++;
+				if (trialId < trialNum) {
+					showDistractor();
+				} else {
+					//end run
+					$("#indicatorM").hide();
+					$("#endRunButton").show();
+				}
+			}
+
+			//		function showCenter() {
+			//		    $("#indicator").show();
+			//			d1 = new Date();
+			//			trialStartTime = d1.getTime();
+			//			data[counter++]=["P:", posId[runId][trialId], inkId[runId][trialId]];
+			//			l1 = letters[posId[runId][trialId] - 1];
+			//			l2 = letters[inkId[runId][trialId] - 1];
+			//		    s1 = '' + l1 + l1 + l1 + l2 + l1 + l1 + l1;
+			//			$("#indicator").text(s1);
+			//		    timeOutHandle = setTimeout(showFixation1, 250);
+			//		}
+
+
+			function showDistractor() {
+				//$("#indicator").hide();
+				$("#indicatorM").show();
+				$("#indicatorU").show();
+				$("#indicatorD").show();
+				d1 = new Date();
+				TrialOnsetTime = d1.getTime();
+				data[counter++] = ["P:", distractorId[runId][trialId], targetId[runId][trialId], '-', '-', '-', gender, age];
+				s1 = words[distractorId[runId][trialId] - 1];
+				$("#indicatorM").text(s1);
+				$("#indicatorD").text(s1);
+				$("#indicatorU").text(s1);
+				timeOutHandle = setTimeout(showFixation0, 133);
+			}
+
+			function showFixation0() {
+				$("#indicatorM").hide();
+				$("#indicatorU").hide();
+				$("#indicatorD").hide();
+				timeOutHandle = setTimeout(showTarget, 33);
+			}
+
+			function showTarget() {
+				s1 = words[targetId[runId][trialId] - 1];
+				$("#targetWord").show();
+				$("#targetWord").text(s1);
+				timeOutHandle = setTimeout(showFixation1, 133);
+			}
+
+			function showFixation1() {
+				$("#targetWord").hide();
+				//$("#indicator").show();
+				//$("#indicator").text("");
+				hasResponse = 0;
+				timeOutHandle_too_slow = setTimeout(function () { showFeedback(2); }, 1500);
+			}
+
+			function showFixation2() {
+				//don't show fixation
+				//$("#indicator").text("");
+				$("#indicatorM").hide();
+
+				$("#rMappingText").hide();
+
+				d3 = new Date();
+				TimeSince_TrialOnset = d3.getTime() - TrialOnsetTime;
+				//2 seconds - time since trial onset
+				timeOutHandle = setTimeout(runtrial, 2000 - TimeSince_TrialOnset);
+			}
+
+			//function showFixation() {
+			//$("#indicator").text("+");
+			//$("#indicator").hide();
+			//$("#rMappingText").hide();
+			//timeOutHandle = setTimeout(showFixation2, 2000);		 
+			//}
+
+			function showFeedback(feedbackType) {
+				hasResponse = 1;
+				if (feedbackType == 1) {
+					//Let's not show the correct feedback
+					$("#indicatorM").text('');
+					//$("#indicator").text('CORRECT!');
+				} else {
+					if (feedbackType == 2) {
+						$("#indicatorM").text('HIBA!');
+					}
+				}
+				$("#indicatorM").show();
+
+				//how long is feedback on screen
+				setTimeout(showFixation2, 200);
+			}
+
+			function runStart(time) {
+				if (time > 0) {
+					$("#indicatorM").text("A(z) " + (runId + 1) + ". kör " + time + " másodperc múlva kezdődik.");
+					$("#indicatorM").show();
+					setTimeout(function () { runStart(time - 1) }, 1000);
+				} else {
+					//trigger stimuli delivery
+					runtrial();
+				}
+			}
+
+			$("body").keypress(function (event) {
+				if (expStart > 0 && hasResponse == 0) {
+					hasResponse = 1;
+					clearTimeout(timeOutHandle_too_slow);
+					d2 = new Date();
+					ans = String.fromCharCode(event.which);
+					ans = ans.toLowerCase();
+					data[counter++] = ["R:", distractorId[runId][trialId], targetId[runId][trialId], d2.getTime() - TrialOnsetTime, ans, keyNames[mapping[rMapping][targetId[runId][trialId] - 1] - 1], gender, age];
+console.log(ans);
+					if (ans == keyNames[mapping[rMapping][targetId[runId][trialId] - 1] - 1]) {
+						showFixation2();
+					}
+					else {
+						showFeedback(2);
+					}
+				}
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<div id="Container" style="z-index:-1;">
+	</div>
+
+	<table id="wrapper">
+		<tr>
+			<td>
+				<div>
+					<p id="indicatorU" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+					<p id="indicatorM" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+					<p id="indicatorD" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+				</div>
+
+				<div>
+					<p id="targetWord" style="font-family:arial;color:white;font-size:77px;"></p>
+				</div>
+
+				<p id="rMappingText" style="font-family:arial;color:white;font-size:36px;"></p>
+				<button id="endExpButton" style="font-family:arial;color:black;font-size:24px;">A feladat véget ért. Kattints ide, hogy visszatérj a főmenübe, ahol elküldheted a válaszaidat!</button>
+				<button id="endRunButton" style="font-family:arial;color:black;font-size:24px;">Ez a rész véget ért. Tarthatsz egy rövid szünetet. Kattints ide a feladat folytatásához!</button>
+				<button id="next" style="font-family:arial;color:black;font-size:24px;">Kattints ide a fő feladat elkezdéséhez!</button>
+				<button id="NoFeedbackButton" style="font-family:arial;color:black;font-size:24px;">Megértettem.</button>
+			</td>
+		</tr>
+	</table>
+
+
+	<p id="Response" style="font-size:48px"></p>
+
+</body>
+
+</html>

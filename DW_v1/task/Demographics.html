@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="jquery-1.7.1.js">
+
+	</script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			data = [['']];
+			$("#returnButton").click(function () {
+				var age, gender
+				var e = document.getElementById("gender");
+				data[0] = gender = e.options[e.selectedIndex].value;
+				data[1] = age = document.getElementById('age').value;
+
+				// e = document.getElementById("ethnicity");
+				// data[2] = e.options[e.selectedIndex].value;
+
+				// e = document.getElementById("race");
+				// data[3] = e.options[e.selectedIndex].value;
+
+				//document.getElementById('age').value = "";
+				//document.getElementById('age').value = data.join(";"); 
+				$("#gender", opener.window.document).val(gender)
+				$("#age", opener.window.document).val(age)
+				$("#Demographics", opener.window.document).val(data.join(";"));
+				opener.updateMainMenu(1);
+				JavaScript: window.close();
+			});
+
+		});
+	</script>
+
+</head>
+
+<body>
+
+	<p>
+		<b>Kérlek, szánj néhány percet az alábbi demográfiai kérdések megválaszolására:</b>
+	</p>
+
+	<p>
+		<b>Nem:</b>
+	</p>
+	<select id="gender">
+		<option value="F">Nő</option>
+		<option value="M">Férfi</option>
+		<option value="NA">Nem kívánok válaszolni</option>
+	</select>
+
+	<p>
+		<b>Kor:</b> (hagyd üresen, ha nem kívánsz rá válaszolni)</p>
+	<input id="age" name="Age" value="">
+
+
+	<p></p>
+	<button id="returnButton" style="font-family:arial;color:black;font-size:14px;">Válaszok mentése és visszatérés a főmenübe</button>
+
+</body>
+
+</html>

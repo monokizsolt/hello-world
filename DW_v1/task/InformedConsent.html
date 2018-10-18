@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta charset="UTF-8">
+
+	<style>
+		.igennem {
+			font-weight: bold;
+			font-size: 18px;
+		}
+	</style>
+
+	<script type="text/javascript" src="jquery-1.7.1.js">
+	</script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$("#ICAgreeButton").click(function () {
+				if (document.getElementById('taj_rad').checked && document.getElementById('bel_rad').checked) {
+					opener.informedConsentAction(true);
+				} else {
+					opener.informedConsentAction(false);
+				}
+
+				JavaScript: window.close();
+			});
+
+			// $("#ICDisagreeButton").click(function () {
+			// 	opener.informedConsentAction(false);
+			// 	JavaScript: window.close();
+			// });
+		});
+
+	</script>
+
+</head>
+
+<body>
+	<p>
+		<b>Tájékoztató nyilatkozat</b>
+		<br>
+		<br> Tisztelt Hölgyem/Uram!
+		<br>
+	</p>
+	<p>
+		Egy tudományos kutatásban veszel részt, amelynek témavezetője Dr. Aczél Balázs, az ELTE Affektív Pszichológia Tanszékének
+		kutatója. </p>
+	<p>
+		<b>A vizsgálat célja:</b> A kutatás célja egy korábbi kísérlet megismétlése. A kísérlet azt kutatja, hogyan dolgozod fel az
+		információkat és hozol döntéseket. A kísérlet körülbelül 16 percet vesz igénybe.
+	</p>
+	<p>
+		<b>Részvétel:</b> A kutatásban való részvétel teljesen önkéntes. A vizsgálatot bármikor indoklás nélkül megszakíthatod, vagy
+		a kérdések megválaszolását megtagadhatod.
+	</p>
+	<p>
+		<b>Adatkezelés:</b> Szigorúan bizalmasan kezelünk minden olyan információt, amit a kutatás keretén belül gyűjtünk össze. A
+		kutatás során nyert adatokat összegezzük, és statisztikai elemzéseket végzünk rajta, amelyekből egyetlen résztvevő azonossága
+		sem állapítható meg. Minden kísérleti résztvevő Netpun-kódját felírjuk, hogy a kísérleti pontokat adminisztrálhassuk, azonban
+		ezeket a kísérleti adatoktól függetlenül tároljuk. A Neptun-kódok alapján a résztvevők megkapják a részvételért járó pontszámot,
+		ami egy Google dokumentumba lesz bevezetve, ahol azokat a szemeszter végéig tároljuk. Az adatokat anonim módon, Excel formátumban
+		tároljuk, és más kutatók számára is ingyenesen online elérhetővé tesszük.
+	</p>
+	<p>
+		Ha bármilyen kérdésed, aggályod vagy panaszod van a kísérlettel kapcsolatban, kérem keresd Kovács Márton kutatóasszisztenst
+		(marcikovacs95@gmail.com). Kérem, amennyiben egyetértesz a fenti feltételekkel, és hozzájárulsz a kutatásban való részvételhez,
+		ezt a lenti gombra való kattintással igazold. Együttműködésedet előre is köszönjük!
+	</p>
+	<br>
+	<p class="igennem">
+		<input type="radio" id="taj_rad" name="Tajekozt" value="1">Igen</input>
+		<input type="radio" name="Tajekozt" value="0">Nem</input>
+	</p>
+	<hr>
+	<p>
+
+		<b>Beleegyező nyilatkozat</b>
+		<br> Kijelentem, hogy az Eötvös Loránd Tudományegyetem által szervezett, Dr. Aczél Balázs kutatásvezető által végzett vizsgálatban
+		önként veszek részt. A vizsgálat jellegéről annak megkezdése előtt kielégítő tájékoztatást kaptam.
+		<br>
+		<br> Tudomásul veszem, hogy az azonosításomra alkalmas személyi adataimat bizalmasan kezelik.
+		<br>
+		<br> Hozzájárulok ahhoz, hogy a vizsgálat során a rólam felvett, személyem azonosítására nem alkalmas adatok más kutatók számára
+		is hozzáférhetők legyenek.
+		<br>
+		<br> Fenntartom a jogot arra, hogy a vizsgálat során annak folytatásától bármikor elállhassak. Ilyen esetben a rólam addig
+		felvett adatokat törölni kell.
+		<br>
+		<br>Tudomásul veszem, hogy a vizsgálat eredményéről külön laboratóriumi lelet, orvosi zárójelentés nem készül.
+		<br>
+		<br>Kérem, amennyiben egyetértesz a fenti feltételekkel, és hozzájárulsz a kutatásban való részvételhez, ezt a lenti gombra
+		való kattintással igazold. Együttműködésedet előre is köszönjük!
+		<br>
+		<br>A kutatásban való részvételem körülményeiről részletes tájékoztatást kaptam, a feltételekkel egyetértek.
+	</p>
+	<br>
+	<p class="igennem">
+		<input type="radio" id="bel_rad" name="Beleegy" value="1">Igen</input>
+		<input type="radio" name="Beleegy" value="0">Nem</input>
+	</p>
+	<hr>
+	<button id="ICAgreeButton" style="font-family:arial;color:black;font-size:20px;">Tovább</button>
+
+</body>
+
+</html>

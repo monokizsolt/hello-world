@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<head>
+	<meta charset="UTF-8">
+
+	<link rel="stylesheet" href="Flanker.css" type="text/css" charset="utf-8">
+	<script type="text/javascript" src="jquery-1.7.1.js">
+
+	</script>
+
+	<script type="text/javascript">
+		function basicPopup(url, heightDec = 0) {
+			popupWindow = window.open(url, 'popUpWindow');
+		}
+
+		function gup(name, tmpURL) {
+			var regexS = "[\\?&]" + name + "=([^&#]*)";
+			var regex = new RegExp(regexS);
+			var results = regex.exec(tmpURL);
+			if (results == null)
+				return "";
+			else
+				return results[1];
+		}
+
+		function updateMainMenu(expStage) {
+			switch (expStage) {
+				case 0:
+					hideAll();
+					$("#Initialization").show();
+					$("#ButtonStep0").show();
+					break;
+
+				case 1:
+					hideAll();
+					$("#Initialization").show();
+					$("#startPractice").show();
+					break;
+
+				case 2:
+					hideAll();
+					$("#Initialization").show();
+					$("#ButtonStep2").show();
+					break;
+
+				case 3:
+					hideAll();
+					$("#Initialization").show();
+					$("#startDemographics").show();
+					break;
+
+				case 4:
+					hideAll();
+					$("#Initialization").show();
+					$("#startTask").show();
+					break;
+
+				case 5:
+					hideAll();
+					$("#mturk_form").show();
+					$("#submitButton").show();
+					break;
+			}
+		}
+
+		function informedConsentAction(agreed) {
+
+			if (agreed == true) {
+				updateMainMenu(3);
+			} else {
+				hideAll();
+				$("#NoGoIndicator").show();
+			}
+		}
+
+		function hideAll() {
+			$("#Initialization").hide();
+			$("#startPractice").hide();
+			$("#startTask").hide();
+			$("#RTs").hide();
+			$("#mturk_form").hide();
+			$("#NoGoIndicator").hide();
+			$("#ClosePage").hide();
+			$("#GeneralInfo").hide();
+			$("#ButtonStep0").hide();
+			$("#ButtonStep2").hide();
+			$("#startDemographics").hide();
+		}
+
+		var seqsId = Math.floor(Math.random() * 4);
+		var mappingId = Math.floor(Math.random() * 24);
+		var mappingId2 = Math.floor(Math.random() * 24);
+
+		function GetMappingId() {
+			return mappingId;
+		}
+
+		function GetMappingId2() {
+			return mappingId2;
+		}
+
+		function GetPairId() {
+			return pairId;
+		}
+
+		function GetSeqsId() {
+			return seqsId;
+		}
+
+		$(document).ready(function () {
+
+			hideAll();
+			$("#startPractice").click(function () {
+				//$("#startPractice").hide();
+				//runRun();
+				basicPopup("task/FlankerPractise.html");
+			});
+
+			$("#startDemographics").click(function () {
+				basicPopup("task/Demographics.html");
+			});
+
+			$("#startTask").click(function () {
+				// document.getElementById('assignmentId').value = gup('assignmentId', document.referrer);
+				// document.getElementById('hitId').value = gup('hitId', document.referrer);
+				// document.getElementById('workerId').value = gup('workerId', document.referrer);
+				$("#RTs").val("assignmentId:" + document.getElementById('assignmentId').value + ";");
+				basicPopup("task/FlankerTask.html");
+			});
+
+			$("#ClosePage").click(function () {
+				JavaScript: window.close();
+			});
+
+			$("#ButtonStep0").click(function () {
+				basicPopup("task/FlankerInstructions.html", 100);
+			});
+
+			$("#ButtonStep2").click(function () {
+				basicPopup("task/InformedConsent.html", 100);
+			});
+
+
+			updateMainMenu(0);
+
+		});
+	</script>
+
+</head>
+
+<body>
+	<div id="Container" style="z-index: -1;">
+	</div>
+	<table id="wrapper">
+		<tbody>
+			<tr>
+				<td>
+
+					<form id="mturk_form" method="POST" action="./flanker_save_data.php">
+						<input type="hidden" id="assignmentId" name="assignmentId" value="assignment">
+						<input type="hidden" id="workerId" name="workerId" value="1">
+						<input type="hidden" id="hitId" name="hitId" value="1">
+						<p style="font-family: arial; color: white; font-size: 30px;">
+							A kísérlet véget ért, köszönjük a részvételt! Kérünk, NEPTUN kódod megadása után kattints az alábbi gombra az eredményeid
+							elküldéséhez!
+							<br>
+							<br> NEPTUN-kód:
+							<input type="text" id="neptun" name="neptun" value="">
+
+						</p>
+
+						<textarea id="RTs" name="RTs"></textarea>
+						<input type="hidden" id="gender">
+						<input type="hidden" id="age">
+						<input type="hidden" id="Demographics" name="Demographics" type="text" value="">
+						<input id="submitButton" style="font-family: arial; color: black; font-size: 24px;" type="submit" name="submit" value="Küldés">
+						<br />
+					</form>
+
+
+					<p id="Initialization" style="font-family: arial; color: white; font-size: 48px;">A feladatod az lesz, hogy beazonosíts egy szót egy 4 szóból álló csoportból.</p>
+					<button id="startPractice" style="font-family: arial; color: black; font-size: 24px;">Kattints ide a gyakorlás elkezdéséhez.</button>
+					<button id="startTask" style="font-family: arial; color: black; font-size: 24px;">Kattints ide a kísérlet elkezdéséhez.</button>
+					<p id="GeneralInfo" style="font-family: arial; color: white; font-size: 40px;"></p>
+					<p id="NoGoIndicator" style="font-family: arial; color: white; font-size: 40px;">Nem egyeztél bele a kísérleten való részvételbe. Ha mégis részt szeretnél venni, kérünk, töltsd újra az oldalt!</p>
+					<button id="ClosePage" style="font-family: arial; color: black; font-size: 24px;">Ablak bezárása</button>
+					<button id="ButtonStep0" style="font-family: arial; color: black; font-size: 24px;">Kattints ide a kísérlet leírásának megtekintéséhez!</button>
+					<button id="ButtonStep2" style="font-family: arial; color: black; font-size: 24px;">Kattints ide a tájékoztató és beleegyező nyilatkozat megtekintéséhez!</button>
+					<button id="startDemographics" style="font-family: arial; color: black; font-size: 24px;">A kísérlet előtt kérünk, kattints ide a demográfiai űrlap kitöltéséhez.</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</body>
+
+</html>

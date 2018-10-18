@@ -1,0 +1,259 @@
+<html>
+
+<head>
+	<meta charset="UTF-8">
+
+	<link rel="stylesheet" href="Flanker.css" type="text/css" charset="utf-8" />
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="jquery-ui.js"></script>
+	<script type="text/javascript" src="FlankerDesignPractise.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			//initialize experiment - these are global variables that can be seen outside & inside functions
+			var runNum = 1;
+			var trialNum = 24;
+			var runId = -1;
+			var trialId = -1;
+			var counter = -1;
+			var hasResponse = -1;
+			//added these to alter the timing between trials and feedback
+			var TrialOnsetTime = -1;
+			var timeOutHandle_too_slow = -1;
+
+			data = [['']];
+
+			// Timer speedup for debugging purposes
+
+			// (function (window) {
+			// 	var _setTimeout = window.setTimeout
+			// 	window.setTimeout = function (cb, t) {
+			// 		_setTimeout(cb, t / 100)
+			// 	}
+			// })(window)
+
+
+			//these refer to html elements defined in the body (see below): paragraphs, buttons, etc.
+			$("#next").show();
+			$("#indicator").hide();
+			$("#endExpButton").hide();
+
+			var targetId = new Array(runNum);
+			var distractorId = new Array(runNum);
+
+			var i = 0;
+			var j = 0;
+			for (i = 0; i < runNum; i++) {
+				targetId[i] = new Array(trialNum);
+				distractorId[i] = new Array(trialNum);
+				for (j = 0; j < trialNum; j++) {
+					targetId[i][j] = targetIds[i][j];
+					distractorId[i][j] = distractorIds[i][j];
+				}
+			}
+
+			$("#next").click(function () {
+				$("#next").hide();
+				runExp();
+			});
+
+			$("#endExpButton").click(function () {
+				//$("#expStage", opener.window.document).val(1);
+				opener.updateMainMenu(4);
+				//$("#rMappingText").text(data.join(";"));
+				//$("#rMappingText").show();
+				JavaScript: window.close();
+			});
+
+			///Function To stop backspace presses 8, and spaces 32 
+			$(function () {
+				/*
+				 * this swallows backspace keys on any non-input element.
+				 * stops backspace -> back
+				 */
+				var rx = /INPUT|SELECT|TEXTAREA/i;
+
+				$(document).bind("keydown keypress", function (e) {
+					if (e.which == 32 || e.which == 8) { // 8 == backspace
+						if (!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly) {
+							e.preventDefault();
+						}
+					}
+				});
+			});
+
+			function runExp() {
+				counter = 0;
+				$("#rMappingText").hide();
+				runRun();
+			}
+
+			function runRun() {
+				runId++;
+				if (runId < runNum) {
+					trialId = -1;
+					//set hasResponse to run begin status
+					hasResponse = -1;
+					$("#indicator").hide();
+					$("#genderWord").hide();
+					$("#rMappingText").hide();
+					//5 seconds count down
+					runStart(5);
+				} else {
+					//end exp
+					$("#indicator").hide();
+					$("#endExpButton").show();
+				}
+			}
+
+			function runtrial() {
+				trialId++;
+				if (trialId < trialNum) {
+					showDistractor();
+				} else {
+					//end run
+					$("#indicator").hide();
+					runRun();
+				}
+			}
+			function showMapping() {
+				//$("#rMappingText").show();
+				$("#indicator").hide();
+				timeOutHandle = setTimeout(showDistractor, 1500);
+			}
+
+			function showDistractor() {
+				//$("#indicator").hide();
+				$("#rMappingText").hide();
+				$("#indicator").show();
+				$("#indicatorU").show();
+				$("#indicatorD").show();
+				d1 = new Date();
+				TrialOnsetTime = d1.getTime();
+				data[counter++] = ["P:", distractorId[runId][trialId], targetId[runId][trialId], TrialOnsetTime];
+				s1 = words[distractorId[runId][trialId] - 1];
+				$("#indicator").text(s1);
+				$("#indicatorD").text(s1);
+				$("#indicatorU").text(s1);
+				timeOutHandle = setTimeout(showFixation0, 133);
+			}
+
+			function showFixation0() {
+				$("#indicator").hide();
+				$("#indicatorU").hide();
+				$("#indicatorD").hide();
+				timeOutHandle = setTimeout(showTarget, 33);
+			}
+
+			function showTarget() {
+				s1 = words[targetId[runId][trialId] - 1];
+				$("#targetWord").show();
+				$("#targetWord").text(s1);
+				timeOutHandle = setTimeout(showFixation1, 133);
+			}
+
+			function showFixation1() {
+				$("#targetWord").hide();
+				//$("#indicator").show();
+				//$("#indicator").text("");
+				hasResponse = 0;
+				timeOutHandle_too_slow = setTimeout(function () { showFeedback(2); }, 1500)
+			}
+
+			function showFixation2() {
+				//don't show fixation
+				//$("#indicator").text("");
+				$("#indicator").hide();
+
+				$("#rMappingText").hide();
+
+				d3 = new Date();
+				TimeSince_TrialOnset = d3.getTime() - TrialOnsetTime;
+				//2 seconds - time since trial onset
+				timeOutHandle = setTimeout(runtrial, 2000 - TimeSince_TrialOnset);
+			}
+
+			function showFixation() {
+				//$("#indicator").text("+");
+				$("#indicator").hide();
+				$("#rMappingText").hide();
+				timeOutHandle = setTimeout(showFixation2, 2000);
+			}
+
+			function showFeedback(feedbackType) {
+				if (feedbackType == 1) {
+					//Let's not show the correct feedback
+					$("#indicator").text('');
+					$("#indicator").text('HELYES!');
+				} else {
+					if (feedbackType == 2) {
+						$("#indicator").text('HIBA!');
+					}
+				}
+				$("#indicator").show();
+
+				//how long is feedback on screen
+				setTimeout(showFixation2, 200);
+			}
+
+			function runStart(time) {
+				if (time > 0) {
+					$("#indicator").text('' + time);
+					$("#indicator").show();
+					setTimeout(function () { runStart(time - 1) }, 1000);
+				} else {
+					//trigger stimuli delivery
+					runtrial();
+				}
+			}
+
+			$("body").keypress(function (event) {
+
+				//clears the timeout associated with not responding in time (lines 130-135)
+				clearTimeout(timeOutHandle_too_slow);
+
+				if (hasResponse == 0) {
+					d2 = new Date();
+					hasResponse = 1;
+					ans = String.fromCharCode(event.which);
+					ans = ans.toLowerCase();
+					data[counter++] = [distractorId[runId][trialId], targetId[runId][trialId], d2.getTime(), ans];
+
+					if (ans == keyNames[targetId[runId][trialId] - 1][0]) {
+
+						showFeedback(1);
+					}
+					else {
+						showFeedback(2);
+					}
+
+				}
+			});
+
+		});
+	</script>
+</head>
+
+<body>
+
+	<table id="wrapper">
+		<tr>
+			<td>
+				<div>
+					<p id="indicatorU" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+					<p id="indicator" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+					<p id="indicatorD" style="font-family:arial;color:white;font-size:48px;line-height:10%"></p>
+				</div>
+
+				<div>
+					<p id="targetWord" style="font-family:arial;color:white;font-size:77px;"></p>
+				</div>
+				<p id="rMappingText" style="font-family:arial;color:white;font-size:36px;">f = Bal, g = Jobb, j = Fel, n = Le</p>
+				<button id="endExpButton" style="font-family:arial;color:black;font-size:24px;">Véget ért a gyakorló rész. Kattints ide, hogy visszatérj a főmenübe!</button>
+				<button id="next" style="font-family:arial;color:black;font-size:24px;">Kattints ide a gyakorlás elkezdéséhez!</button>
+			</td>
+		</tr>
+	</table>
+
+</body>
+
+</html>
